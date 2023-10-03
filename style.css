@@ -117,3 +117,22 @@ i {
     width: 80px;
     text-align: center;
 }
+
+.deleted-item {
+    color: #888;
+    /* Cor cinza */
+    font-style: italic;
+    /* Texto em itálico */
+    text-decoration: line-through;
+    /* Texto tachado */
+}
+
+#clearHistory {
+    background-color: #D83121;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
