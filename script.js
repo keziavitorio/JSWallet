@@ -12,7 +12,8 @@ let items;
 
 btnNew.onclick = () => {
     if (descItem.value === "" || amount.value === "" || type.value === "") {
-        return alert("Preencha todos os campos!");
+        alert("Preencha todos os campos!");
+        return;
     }
 
     items.push({
@@ -20,11 +21,9 @@ btnNew.onclick = () => {
         amount: Math.abs(amount.value).toFixed(2),
         type: type.value,
         deleted: false, // Adicione o campo "deleted" e defina como falso por padrão
-
     });
 
     setItensBD();
-
     loadItens();
 
     descItem.value = "";
@@ -33,6 +32,19 @@ btnNew.onclick = () => {
 
 function deleteItem(index) {
     items[index].deleted = true;
+
+    let type = "Entrada";
+    if (items[index].type === 'Entrada') {
+        type = "Saída"
+    }
+
+    items.push({
+        desc: `Estorno ${items[index].desc}`,
+        amount:  items[index].amount,
+        type: type,
+        deleted: true
+    })
+
     setItensBD();
     loadItens();
 }
@@ -49,7 +61,7 @@ function insertItem(item, index) {
         : '<i class="bx bxs-chevron-down-circle"></i>'
     }</td>
     <td class="columnAction">
-      <button onclick="deleteItem(${index})"><i class='bx bx-trash'></i></button>
+      <button id=b${index} onclick="deleteItem(${index})"><i class='bx bx-trash'></i></button>
     </td>
   `;
 
@@ -74,11 +86,13 @@ function loadItens() {
                     ? '<i class="bx bxs-chevron-up-circle"></i>'
                     : '<i class="bx bxs-chevron-down-circle"></i>'
             }</td>
-            <td>${item.date}</td>
-            <td class="columnAction">
-                <button onclick="deleteItem(${index})"><i class='bx bx-trash'></i></button>
-            </td>
-        `;
+            `
+
+        if (!item.desc.startsWith('Estorno') && !item.deleted) {
+            tr.innerHTML += `<td class="columnAction">
+                <button id=b${index} onclick="deleteItem(${index})"><i class='bx bx-trash'></i></button>
+            </td>`
+        }
 
         tbody.appendChild(tr);
     });
