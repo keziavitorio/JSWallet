@@ -12,17 +12,18 @@ let items;
 
 btnNew.onclick = () => {
     if (descItem.value === "" || amount.value === "" || type.value === "") {
-        return alert("Preencha todos os campos!");
+        alert("Preencha todos os campos!");
+        return;
     }
 
     items.push({
         desc: descItem.value,
         amount: Math.abs(amount.value).toFixed(2),
         type: type.value,
+        deleted: false, // Adicione o campo "deleted" e defina como falso por padrão
     });
 
     setItensBD();
-
     loadItens();
 
     descItem.value = "";
@@ -30,7 +31,20 @@ btnNew.onclick = () => {
 };
 
 function deleteItem(index) {
-    items.splice(index, 1);
+    items[index].deleted = true;
+
+    let type = "Entrada";
+    if (items[index].type === 'Entrada') {
+        type = "Saída"
+    }
+
+    items.push({
+        desc: `Estorno ${items[index].desc}`,
+        amount:  items[index].amount,
+        type: type,
+        deleted: true
+    })
+
     setItensBD();
     loadItens();
 }
@@ -47,7 +61,7 @@ function insertItem(item, index) {
         : '<i class="bx bxs-chevron-down-circle"></i>'
     }</td>
     <td class="columnAction">
-      <button onclick="deleteItem(${index})"><i class='bx bx-trash'></i></button>
+      <button id=b${index} onclick="deleteItem(${index})"><i class='bx bx-trash'></i></button>
     </td>
   `;
 
@@ -58,7 +72,29 @@ function loadItens() {
     items = getItensBD();
     tbody.innerHTML = "";
     items.forEach((item, index) => {
-        insertItem(item, index);
+        const tr = document.createElement("tr");
+
+        if (item.deleted) {
+            tr.classList.add("deleted-item"); // Adicione uma classe para itens excluídos
+        }
+
+        tr.innerHTML = `
+            <td>${item.desc}</td>
+            <td>R$ ${item.amount}</td>
+            <td class="columnType">${
+                item.type === "Entrada"
+                    ? '<i class="bx bxs-chevron-up-circle"></i>'
+                    : '<i class="bx bxs-chevron-down-circle"></i>'
+            }</td>
+            `
+
+        if (!item.desc.startsWith('Estorno') && !item.deleted) {
+            tr.innerHTML += `<td class="columnAction">
+                <button id=b${index} onclick="deleteItem(${index})"><i class='bx bx-trash'></i></button>
+            </td>`
+        }
+
+        tbody.appendChild(tr);
     });
 
     getTotals();
@@ -91,5 +127,14 @@ function getTotals() {
 const getItensBD = () => JSON.parse(localStorage.getItem("db_items")) || [];
 const setItensBD = () =>
     localStorage.setItem("db_items", JSON.stringify(items));
+
+const clearHistoryBtn = document.querySelector("#clearHistory");
+
+clearHistoryBtn.addEventListener("click", () => {
+    items = items.filter((item) => !item.deleted); // Remove permanentemente os itens marcados como excluídos
+    setItensBD();
+    loadItens();
+});
+
 
 loadItens();
